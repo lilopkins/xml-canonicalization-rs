@@ -1,0 +1,31 @@
+InputString = {
+  SOI ~
+  (CharacterReference | CharacterThatMightNeedChanging | Character)* ~
+  EOI
+}
+
+CharacterReference = ${
+  ("&" ~ WellKnownRef ~ ";") |
+  ("&#" ~ DecimalRef ~ ";") |
+  ("&#x" ~ HexadecimalRef ~ ";")
+}
+
+WellKnownRef = @{
+  "amp" | "lt" | "gt" | "apos" | "quot"
+}
+
+DecimalRef = @{
+  ('0'..'9')+
+}
+
+HexadecimalRef = @{
+  ('0'..'9' | 'a'..'f' | 'A'..'F')+
+}
+
+CharacterThatMightNeedChanging = @{
+  "\"" | ">" | "\x0D" | "\x09" | "\x0A"
+}
+
+Character = @{
+  ANY
+}

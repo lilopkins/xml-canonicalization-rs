@@ -1,0 +1,116 @@
+StartTag = {
+  SOI ~
+  QName ~
+  Attribute* ~
+  EOI
+}
+
+QName = ${
+  PrefixedName | UnprefixedName
+}
+
+PrefixedName = ${
+  Prefix ~ ":" ~ LocalPart
+}
+
+UnprefixedName = ${
+  LocalPart
+}
+
+Prefix = @{
+  Name
+}
+
+LocalPart = @{
+  Name
+}
+
+Name = @{
+  NameStartCharMod ~ (NameChar)*
+}
+
+NameStartCharMod = @{
+  // ":" |
+  'A'..'Z' |
+  "\x5f" |
+  'a'..'z' |
+  '\u{00C0}'..'\u{00D6}' |
+  '\u{00D8}'..'\u{00F6}' |
+  '\u{00F8}'..'\u{02FF}' |
+  '\u{0370}'..'\u{037D}' |
+  '\u{037F}'..'\u{1FFF}' |
+  '\u{200C}'..'\u{200D}' |
+  '\u{2070}'..'\u{218F}' |
+  '\u{2C00}'..'\u{2FEF}' |
+  '\u{3001}'..'\u{D7FF}' |
+  '\u{F900}'..'\u{FDCF}' |
+  '\u{FDF0}'..'\u{FFFD}' |
+  '\u{10000}'..'\u{EFFFF}'
+}
+
+NameChar = @{
+  NameStartCharMod |
+  "-" |
+  "." |
+  '0'..'9' |
+  "\u{00B7}" |
+  '\u{0300}'..'\u{036F}' |
+  '\u{203F}'..'\u{2040}'
+}
+
+Attribute = {
+  QName ~
+  "=" ~
+  AttValue
+}
+
+AttValue = ${
+  ("\"" ~ AttValueInnerDoubleQuote ~ "\"") |
+  ("'" ~ AttValueInnerSingleQuote ~ "'") |
+  AttValueInnerNoSpaces
+}
+
+AttValueInnerDoubleQuote = @{
+  (AttValueCharDoubleQuote | Reference)*
+}
+
+AttValueInnerSingleQuote = @{
+  (AttValueCharSingleQuote | Reference)*
+}
+
+AttValueInnerNoSpaces = @{
+  (!(" ") ~ (AttValueChar | Reference))*
+}
+
+AttValueChar = @{
+  !(
+    "^" | "&" | "\"" | "'" // | "<"
+  ) ~ ANY
+}
+
+AttValueCharSingleQuote = @{
+  !(
+    "^" | "&" | "\'" // | "<"
+  ) ~ ANY
+}
+
+AttValueCharDoubleQuote = @{
+  !(
+    "^" | "&" | "\"" // | "<"
+  ) ~ ANY
+}
+
+Reference = _{
+  EntityRef | CharRef
+}
+
+EntityRef = @{
+  "&" ~ Name ~ ";"
+}
+
+CharRef = @{
+  ("&#" ~ ('0'..'9')+ ~ ";") |
+  ("&#x" ~ ('0'..'9' | 'a'..'f' | 'A'..'F')+ ~ ";")
+}
+
+WHITESPACE = _{ "\x20" | "\x09" | "\x0D" | "\x0A" }

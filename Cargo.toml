@@ -1,0 +1,20 @@
+[package]
+name = "xml-c14n"
+description = "XML Canonicalisation Library"
+authors = [
+    "Lily Hopkins <lily@hpkns.uk>"
+]
+repository = "https://github.com/lilopkins/xml-c14n-rs"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+pest = "2.7.15"
+pest_derive = "2.7.15"
+quick-xml = "0.37.2"
+regex = "1.11.1"
+tracing = "0.1.41"
+
+[dev-dependencies]
+tracing-test = { version = "0.2.5", features = ["no-env-filter"] }
