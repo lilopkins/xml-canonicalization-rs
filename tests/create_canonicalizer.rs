@@ -1,7 +1,7 @@
 use std::io::Cursor;
 
 use tracing_test::traced_test;
-use xml_c14n::Canonicalizer;
+use xml_canonicalization::Canonicalizer;
 
 #[test]
 #[traced_test]

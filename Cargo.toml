@@ -1,10 +1,10 @@
 [package]
-name = "xml-c14n"
-description = "XML Canonicalisation Library"
+name = "xml-canonicalization"
+description = "XML Canonicalisation Library in pure Rust"
 authors = [
     "Lily Hopkins <lily@hpkns.uk>"
 ]
-repository = "https://github.com/lilopkins/xml-c14n-rs"
+repository = "https://github.com/lilopkins/xml-canonicalization-rs"
 version = "0.1.0"
 edition = "2021"
 license = "MIT"

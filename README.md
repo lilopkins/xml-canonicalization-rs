@@ -1,6 +1,6 @@
-# `xml-c14n`
+# `xml-canonicalization`
 
-[XML Canonicalisation] for Rust.
+A pure Rust [XML Canonicalisation] implementation.
 
 ## Unsupported Features
 
@@ -18,7 +18,7 @@ against examples from the W3C specification.
 
 ```rust
 use std::io::Cursor;
-use xml_c14n::Canonicalizer;
+use xml_canonicalization::Canonicalizer;
 
 let input = r#"<?xml version="1.0" encoding="ISO-8859-1"?><doc>&#169;</doc>"#;
 let canonical = r#"<doc>©</doc>"#;
