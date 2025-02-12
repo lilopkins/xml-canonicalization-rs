@@ -20,8 +20,7 @@ use regex::Regex;
 mod grammars;
 mod namespace;
 
-/// [`Canonicalizer`]s take XML from a [`quick_xml::Reader`] and return the
-/// canonicalised form of that XML.
+/// [`Canonicalizer`]s take XML and return the canonicalised form of that XML.
 pub struct Canonicalizer<R, W> {
     reader: Reader<R>,
     writer: Option<Writer<W>>,
