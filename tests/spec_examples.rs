@@ -47,14 +47,14 @@ fn example_3_1() {
      * · Comment removal from uncommented canonical form, including delimiter for comments outside document element (the last character in both canonical forms is '>')
      */
     let mut result = vec![];
-    Canonicalizer::read_from_str(&input)
+    Canonicalizer::read_from_str(input)
         .write_to_writer(Cursor::new(&mut result))
         .canonicalize(true)
         .expect("canonicalization shouldn't fail");
     assert_eq!(String::from_utf8_lossy(&result), canonical_commented);
 
     let mut result = vec![];
-    Canonicalizer::read_from_str(&input)
+    Canonicalizer::read_from_str(input)
         .write_to_writer(Cursor::new(&mut result))
         .canonicalize(false)
         .expect("canonicalization shouldn't fail");
@@ -96,7 +96,7 @@ fn example_3_2() {
      * · Retain all whitespace in character content, clean or dirty
      */
     let mut result = vec![];
-    Canonicalizer::read_from_str(&input)
+    Canonicalizer::read_from_str(input)
         .write_to_writer(Cursor::new(&mut result))
         .canonicalize(true)
         .expect("canonicalization shouldn't fail");
@@ -150,7 +150,7 @@ fn example_3_3() {
      * · Elimination of superfluous namespace declarations
      */
     let mut result = vec![];
-    Canonicalizer::read_from_str(&input)
+    Canonicalizer::read_from_str(input)
         .write_to_writer(Cursor::new(&mut result))
         .canonicalize(true)
         .expect("canonicalization shouldn't fail");
@@ -191,7 +191,7 @@ Second line</text>
      * · Encoding of special characters as character references in text (&amp;, &lt;, &gt;, &#xD;)
      */
     let mut result = vec![];
-    Canonicalizer::read_from_str(&input)
+    Canonicalizer::read_from_str(input)
         .write_to_writer(Cursor::new(&mut result))
         .canonicalize(true)
         .expect("canonicalization shouldn't fail");
@@ -214,7 +214,7 @@ fn example_3_6() {
      * · Effect of transcoding from a sample encoding to UTF-8
      */
     let mut result = vec![];
-    Canonicalizer::read_from_str(&input)
+    Canonicalizer::read_from_str(input)
         .write_to_writer(Cursor::new(&mut result))
         .canonicalize(true)
         .expect("canonicalization shouldn't fail");

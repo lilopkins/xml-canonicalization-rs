@@ -96,6 +96,10 @@ impl<R> Canonicalizer<R, BufWriter<File>> {
 impl<R: BufRead, W: Write> Canonicalizer<R, W> {
     /// Start canonicalizing the document to the writer.
     ///
+    /// # Errors
+    ///
+    /// Returns an XML error if the XML parsed is invalid.
+    ///
     /// # Panics
     ///
     /// This will panic is a writer has not been initialised with
@@ -110,13 +114,7 @@ impl<R: BufRead, W: Write> Canonicalizer<R, W> {
 
         let mut registered_namespaces = DepthSensitiveMap::new();
         // Add a default blank namespace.
-        registered_namespaces.insert_at_depth(
-            0,
-            "_",
-            Namespace {
-                url: "".to_string(),
-            },
-        );
+        registered_namespaces.insert_at_depth(0, "_", Namespace { url: String::new() });
         let mut writer = self
             .writer
             .expect("trying to canonicalize without a writer initialised");
@@ -124,19 +122,21 @@ impl<R: BufRead, W: Write> Canonicalizer<R, W> {
         let mut depth = 0;
         let mut hit_pi_rule = false;
         let mut text_buf = String::new();
+        let whitespace_duplicate_regex = Regex::new(r"\n\n*").unwrap();
+        let pi_tidyup_regex = Regex::new(r"^(\S+)(?:\s*( .*)|\s*$)").unwrap();
         loop {
             let e = self.reader.read_event_into(&mut buf);
             tracing::trace!("Event: {e:?}");
             match e {
                 // The XML declaration and document type declaration (DTD) are removed.
-                Ok(Event::Decl(_)) => (),
-                Ok(Event::DocType(_)) => (),
+                Ok(Event::Decl(_) | Event::DocType(_)) => (),
+                // Empty should be unreachable as we've instructed the reader to always expand
+                Ok(Event::Empty(_)) => unreachable!(),
                 Ok(Event::PI(p)) => {
                     hit_pi_rule = true;
                     let p = p.into_inner();
                     let p = String::from_utf8_lossy(&p).into_owned();
-                    let r = Regex::new(r"^(\S+)(?:\s*( .*)|\s*$)").unwrap();
-                    let p = r.replace_all(&p, "$1$2").into_owned();
+                    let p = pi_tidyup_regex.replace_all(&p, "$1$2").into_owned();
                     if !text_buf.is_empty() {
                         writer.write_event(Event::Text(BytesText::from_escaped(&text_buf)))?;
                         text_buf.clear();
@@ -163,7 +163,7 @@ impl<R: BufRead, W: Write> Canonicalizer<R, W> {
                     text_buf.push_str(
                         &grammars::character_refs::canonicalize_character_references(
                             &text,
-                            grammars::character_refs::Situation::Content,
+                            &grammars::character_refs::Situation::Content,
                         )
                         .unwrap(),
                     );
@@ -171,10 +171,11 @@ impl<R: BufRead, W: Write> Canonicalizer<R, W> {
                     if depth == 0 {
                         if hit_pi_rule {
                             // Remove duplicates only
-                            let r = Regex::new(r"\n\n*").unwrap();
-                            text_buf = r.replace_all(&text_buf, "\n").into_owned();
+                            text_buf = whitespace_duplicate_regex
+                                .replace_all(&text_buf, "\n")
+                                .into_owned();
                         } else {
-                            text_buf = text_buf.replace("\n", "");
+                            text_buf = text_buf.replace('\n', "");
                         }
                     }
                 }
@@ -182,16 +183,13 @@ impl<R: BufRead, W: Write> Canonicalizer<R, W> {
                     let c = c.into_inner();
                     let c = String::from_utf8_lossy(&c);
                     let c = c
-                        .replace("&", "&amp;")
-                        .replace("<", "&lt;")
-                        .replace(">", "&gt;");
-                    // TODO Now run regular text processing over it…
+                        .replace('&', "&amp;")
+                        .replace('<', "&lt;")
+                        .replace('>', "&gt;");
                     text_buf.push_str(&c);
                 }
 
                 Ok(Event::Start(s)) => {
-                    // TODO Special characters in attribute values and character content are replaced by character references
-
                     depth += 1;
                     if !text_buf.is_empty() {
                         writer.write_event(Event::Text(BytesText::from_escaped(&text_buf)))?;
@@ -208,7 +206,7 @@ impl<R: BufRead, W: Write> Canonicalizer<R, W> {
                 }
                 Ok(Event::End(e)) => {
                     // Drop all known namespaces at base depth greater than new current
-                    let _ = registered_namespaces.remove_depth(depth);
+                    registered_namespaces.remove_depth(depth);
 
                     depth -= 1;
 
@@ -220,10 +218,6 @@ impl<R: BufRead, W: Write> Canonicalizer<R, W> {
                 }
 
                 Ok(Event::Eof) => break,
-                Ok(e) => {
-                    tracing::trace!("event with no special behaviour: {e:?}");
-                    // writer.write_event(e)?;
-                }
                 Err(e) => return Err(e),
             }
         }

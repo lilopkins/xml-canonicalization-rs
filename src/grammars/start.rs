@@ -67,45 +67,42 @@ impl Attribute {
             if other.name.starts_with("xmlns:") {
                 // Check local part
                 return self.name.cmp(&other.name);
-            } else {
-                return Ordering::Less;
             }
+            return Ordering::Less;
         }
 
-        if self.name.contains(":") {
+        if self.name.contains(':') {
             // Qualified
-            if other.name.contains(":") {
+            if other.name.contains(':') {
                 // Other qualified
                 // Sort by assocated addresses, THEN local part
                 let namespaces = registered_namespaces.to_map();
 
-                let mut this_split = self.name.split(":");
+                let mut this_split = self.name.split(':');
                 let this_prefix = this_split.next().unwrap().to_string();
                 let this_namespace = namespaces.get(&this_prefix).unwrap();
                 let this_local = this_split.next().unwrap();
 
-                let mut other_split = other.name.split(":");
+                let mut other_split = other.name.split(':');
                 let other_prefix = other_split.next().unwrap().to_string();
                 let other_namespace = namespaces.get(&other_prefix).unwrap();
                 let other_local = other_split.next().unwrap();
 
                 match this_namespace.url.cmp(&other_namespace.url) {
-                    Ordering::Equal => {
-                        return this_local.cmp(other_local);
-                    }
-                    ord => return ord,
+                    Ordering::Equal => this_local.cmp(other_local),
+                    ord => ord,
                 }
             } else {
-                return Ordering::Greater;
+                Ordering::Greater
             }
         } else {
             // Unqualified
-            if other.name.contains(":") {
+            if other.name.contains(':') {
                 // Other qualified
-                return Ordering::Less;
+                Ordering::Less
             } else {
                 // Check local part
-                return self.name.cmp(&other.name);
+                self.name.cmp(&other.name)
             }
         }
     }
@@ -115,7 +112,7 @@ pub fn canonicalize_start_tag(
     start_tag: &str,
     depth: usize,
     registered_namespaces: &mut DepthSensitiveMap<String, Namespace>,
-) -> Result<String, Error<Rule>> {
+) -> Result<String, Box<Error<Rule>>> {
     let mut tag = StartTag::default();
 
     let start_tag = StartTagParser::parse(Rule::StartTag, start_tag)?
@@ -127,7 +124,7 @@ pub fn canonicalize_start_tag(
 
     let qname = start_tag_inner.next().unwrap();
     assert_eq!(qname.as_rule(), Rule::QName);
-    tag.name = qname.as_str().to_owned();
+    qname.as_str().clone_into(&mut tag.name);
 
     for attr in start_tag_inner {
         if attr.as_rule() == Rule::EOI {
@@ -150,8 +147,8 @@ pub fn canonicalize_start_tag(
         let attribute = Attribute {
             name: name.as_str().to_owned(),
             value: super::character_refs::canonicalize_character_references(
-                &value.as_str().replace("\r", "").replace("\n", " "),
-                super::character_refs::Situation::Attribute,
+                &value.as_str().replace('\r', "").replace('\n', " "),
+                &super::character_refs::Situation::Attribute,
             )
             .unwrap(),
         };
@@ -162,16 +159,17 @@ pub fn canonicalize_start_tag(
         if attribute.name == "xmlns" {
             let url = attribute.value.clone();
 
+            #[allow(clippy::unnecessary_to_owned)]
             if registered_namespaces
                 .to_map()
                 .get(&"_".to_string())
                 .map(|ns| ns.url.clone())
-                != Some(url.clone())
+                == Some(url.clone())
             {
+                add_attribute = false;
+            } else {
                 tracing::debug!("Registering new default namespace at depth {depth}: {url}");
                 registered_namespaces.insert_at_depth(depth, "_", Namespace { url });
-            } else {
-                add_attribute = false;
             }
         }
         if attribute.name.starts_with("xmlns:") {
@@ -182,12 +180,12 @@ pub fn canonicalize_start_tag(
                 .to_map()
                 .get(&name)
                 .map(|ns| ns.url.clone())
-                != Some(url.clone())
+                == Some(url.clone())
             {
+                add_attribute = false;
+            } else {
                 tracing::debug!("Registering new {name} namespace at depth {depth}: {url}");
                 registered_namespaces.insert_at_depth(depth, name, Namespace { url });
-            } else {
-                add_attribute = false;
             }
         }
 
