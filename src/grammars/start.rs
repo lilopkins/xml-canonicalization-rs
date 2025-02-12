@@ -169,13 +169,7 @@ pub fn canonicalize_start_tag(
                 != Some(url.clone())
             {
                 tracing::debug!("Registering new default namespace at depth {depth}: {url}");
-                registered_namespaces.insert_at_depth(
-                    depth,
-                    "_",
-                    Namespace {
-                        url,
-                    },
-                );
+                registered_namespaces.insert_at_depth(depth, "_", Namespace { url });
             } else {
                 add_attribute = false;
             }
@@ -191,13 +185,7 @@ pub fn canonicalize_start_tag(
                 != Some(url.clone())
             {
                 tracing::debug!("Registering new {name} namespace at depth {depth}: {url}");
-                registered_namespaces.insert_at_depth(
-                    depth,
-                    name,
-                    Namespace {
-                        url,
-                    },
-                );
+                registered_namespaces.insert_at_depth(depth, name, Namespace { url });
             } else {
                 add_attribute = false;
             }

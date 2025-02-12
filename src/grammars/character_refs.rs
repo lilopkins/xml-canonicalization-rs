@@ -68,16 +68,19 @@ pub fn canonicalize_character_references(
                     Rule::DecimalRef => {
                         let val = inner.as_str();
                         if let Ok(code) = val.parse::<u32>() {
-
                             match code {
                                 0xd => output.push_str("&#xD;"),
                                 0xa => match situation {
                                     Situation::Attribute => output.push_str("&#xA;"),
-                                    Situation::Content => output.push(char::from_u32(code).unwrap()),
+                                    Situation::Content => {
+                                        output.push(char::from_u32(code).unwrap())
+                                    }
                                 },
                                 0x9 => match situation {
                                     Situation::Attribute => output.push_str("&#x9;"),
-                                    Situation::Content => output.push(char::from_u32(code).unwrap()),
+                                    Situation::Content => {
+                                        output.push(char::from_u32(code).unwrap())
+                                    }
                                 },
                                 _ => output.push(char::from_u32(code).unwrap()),
                             }
@@ -90,11 +93,15 @@ pub fn canonicalize_character_references(
                                 0xd => output.push_str("&#xD;"),
                                 0xa => match situation {
                                     Situation::Attribute => output.push_str("&#xA;"),
-                                    Situation::Content => output.push(char::from_u32(code).unwrap()),
+                                    Situation::Content => {
+                                        output.push(char::from_u32(code).unwrap())
+                                    }
                                 },
                                 0x9 => match situation {
                                     Situation::Attribute => output.push_str("&#x9;"),
-                                    Situation::Content => output.push(char::from_u32(code).unwrap()),
+                                    Situation::Content => {
+                                        output.push(char::from_u32(code).unwrap())
+                                    }
                                 },
                                 _ => output.push(char::from_u32(code).unwrap()),
                             }
