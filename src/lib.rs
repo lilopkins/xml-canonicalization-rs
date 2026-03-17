@@ -103,6 +103,7 @@ impl<R: BufRead, W: Write> Canonicalizer<R, W> {
     ///
     /// This will panic is a writer has not been initialised with
     /// `write_to_string`, `write_to_file`, or `write_to_writer`.
+    #[allow(clippy::too_many_lines)]
     pub fn canonicalize(mut self, retain_comments: bool) -> Result<(), quick_xml::Error> {
         tracing::debug!("Canonicalisation starting…");
 
@@ -186,6 +187,13 @@ impl<R: BufRead, W: Write> Canonicalizer<R, W> {
                         .replace('<', "&lt;")
                         .replace('>', "&gt;");
                     text_buf.push_str(&c);
+                }
+                Ok(Event::GeneralRef(b)) => {
+                    let b = b.into_inner();
+                    let b = String::from_utf8_lossy(&b);
+                    text_buf.push_str(
+                        &grammars::character_refs::canonicalize_character_reference(&b).unwrap(),
+                    );
                 }
 
                 Ok(Event::Start(s)) => {

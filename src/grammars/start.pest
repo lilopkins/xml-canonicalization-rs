@@ -84,19 +84,19 @@ AttValueInnerNoSpaces = @{
 
 AttValueChar = @{
   !(
-    "^" | "&" | "\"" | "'" // | "<"
+    "&" | "\"" | "'" // | "<"
   ) ~ ANY
 }
 
 AttValueCharSingleQuote = @{
   !(
-    "^" | "&" | "\'" // | "<"
+    "&" | "\'" // | "<"
   ) ~ ANY
 }
 
 AttValueCharDoubleQuote = @{
   !(
-    "^" | "&" | "\"" // | "<"
+    "&" | "\"" // | "<"
   ) ~ ANY
 }
 
