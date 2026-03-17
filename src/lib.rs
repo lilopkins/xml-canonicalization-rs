@@ -191,7 +191,9 @@ impl<R: BufRead, W: Write> Canonicalizer<R, W> {
                 Ok(Event::GeneralRef(b)) => {
                     let b = b.into_inner();
                     let b = String::from_utf8_lossy(&b);
-                    text_buf.push_str(&b);
+                    text_buf.push_str(
+                        &grammars::character_refs::canonicalize_character_reference(&b).unwrap(),
+                    );
                 }
 
                 Ok(Event::Start(s)) => {
