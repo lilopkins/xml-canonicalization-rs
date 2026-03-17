@@ -1,13 +1,12 @@
 [package]
 name = "xml-canonicalization"
 description = "XML Canonicalisation Library in pure Rust"
-authors = [
-    "Lily Hopkins <lily@hpkns.uk>"
-]
+authors = ["Lily Hopkins <lily@hpkns.uk>"]
 repository = "https://github.com/lilopkins/xml-canonicalization-rs"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 license = "MIT"
+rust-version = "1.83"
 
 [dependencies]
 pest = "2.8.6"
