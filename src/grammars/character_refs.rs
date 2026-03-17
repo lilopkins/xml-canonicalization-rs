@@ -18,13 +18,12 @@ pub fn canonicalize_character_reference(input: &str) -> Result<String, Box<Error
         .unwrap();
     tracing::trace!("input ref parsed as: {input_string}");
 
-    let inner = input_string
-        .into_inner()
-        .next()
-        .unwrap()
-        .into_inner()
-        .next()
-        .unwrap();
+    let inner = input_string.into_inner().next().unwrap();
+    assert_eq!(inner.as_rule(), Rule::InnerCharacterReference);
+
+    let inner = inner.into_inner().next().unwrap();
+    assert!([Rule::WellKnownRef, Rule::DecimalRef, Rule::HexadecimalRef].contains(&inner.as_rule()));
+
     inner_character_reference(&inner, &Situation::Content, &mut output);
     Ok(output)
 }
@@ -68,7 +67,8 @@ pub fn canonicalize_character_references(
             },
             Rule::CharacterReference => {
                 let inner = pair.into_inner().next().unwrap();
-                inner_character_reference(&inner, situation, &mut output);
+                let inner_ref = inner.into_inner().next().unwrap();
+                inner_character_reference(&inner_ref, situation, &mut output);
             }
             _ => unreachable!(),
         }
