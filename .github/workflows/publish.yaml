@@ -27,7 +27,7 @@ jobs:
           cargo test
 
       - name: Sign in to crates.io
-        run: cargo login ${{ secrets.CARGO_TOKEN }}
+        run: echo ${{ secrets.CARGO_TOKEN }} | cargo login
 
       - name: Publish
         run: cargo publish
